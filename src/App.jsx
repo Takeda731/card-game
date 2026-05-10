@@ -18,15 +18,15 @@ function App() {
         <div className="menu">
 
           <button onClick={() => setScreen("collection")}>
-            Collection
+            Коллекция
           </button>
 
           <button onClick={() => setScreen("shop")}>
-            Pack Shop
+            Магазин
           </button>
 
           <button onClick={() => setScreen("earn")}>
-            Earn Coins
+            Заработок
           </button>
 
         </div>
@@ -36,7 +36,7 @@ function App() {
         <div>
 
           <button onClick={() => setScreen("menu")}>
-            Back
+            Назад
           </button>
 
           <h2>Collection</h2>
