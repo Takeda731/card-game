@@ -1,0 +1,325 @@
+body {
+  margin: 0;
+  padding: 0;
+  background: #050505;
+  font-family: Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    radial-gradient(circle at top,
+      #1c1c35 0%,
+      #0c0c16 55%,
+      #050505 100%);
+}
+
+.phone-frame {
+  width: 390px;
+  height: 844px;
+
+  background: rgba(15,15,25,0.96);
+
+  border-radius: 40px;
+
+  overflow: hidden;
+
+  position: relative;
+
+  border: 2px solid rgba(255,255,255,0.08);
+
+  box-shadow:
+    0 0 50px rgba(0,0,0,0.6),
+    0 0 120px rgba(90,90,255,0.12);
+}
+
+.top-bar {
+  width: 100%;
+
+  padding: 24px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.game-title {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.subtitle {
+  color: rgba(255,255,255,0.45);
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.coins {
+  background: rgba(255,215,0,0.12);
+
+  padding: 10px 18px;
+
+  border-radius: 16px;
+
+  color: #ffd54a;
+  font-weight: bold;
+}
+
+.content {
+  padding: 20px;
+  height: calc(100% - 150px);
+  overflow-y: auto;
+}
+
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.big-pack {
+  width: 260px;
+  height: 380px;
+
+  margin-top: 40px;
+
+  border-radius: 30px;
+
+  background:
+    linear-gradient(145deg,
+      #ffcf4d,
+      #ff9100);
+
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  box-shadow:
+    0 0 40px rgba(255,180,0,0.35),
+    0 0 100px rgba(255,180,0,0.12);
+}
+
+.pack-glow {
+  position: absolute;
+
+  width: 180%;
+  height: 180%;
+
+  background:
+    radial-gradient(circle,
+      rgba(255,255,255,0.35),
+      transparent 60%);
+
+  animation: pulse 2s infinite;
+}
+
+.pack-text {
+  position: relative;
+
+  color: white;
+  font-size: 34px;
+  font-weight: bold;
+
+  text-align: center;
+
+  z-index: 2;
+}
+
+.main-button {
+  margin-top: 40px;
+
+  width: 100%;
+  height: 60px;
+
+  border: none;
+  border-radius: 20px;
+
+  background:
+    linear-gradient(145deg,
+      #5b5bff,
+      #7676ff);
+
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.section-title {
+  color: white;
+  font-size: 28px;
+  margin-bottom: 24px;
+}
+
+.shop-pack {
+  width: 100%;
+
+  padding: 20px;
+
+  border-radius: 24px;
+
+  margin-bottom: 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legendary {
+  background:
+    linear-gradient(145deg,
+      #ffb300,
+      #ff7b00);
+}
+
+.epic {
+  background:
+    linear-gradient(145deg,
+      #7a4dff,
+      #5631d8);
+}
+
+.shop-pack-title {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.shop-pack-sub {
+  color: rgba(255,255,255,0.7);
+  margin-top: 6px;
+}
+
+.buy-button {
+  border: none;
+
+  padding: 12px 20px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.2);
+
+  color: white;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.collection-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sort-select {
+  background: #1f1f2d;
+
+  color: white;
+
+  border: none;
+
+  padding: 10px 14px;
+
+  border-radius: 12px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.collection-card {
+  background: rgba(255,255,255,0.04);
+
+  border-radius: 24px;
+
+  padding: 12px;
+
+  backdrop-filter: blur(8px);
+}
+
+.collection-card img {
+  width: 100%;
+  display: block;
+}
+
+.card-name {
+  margin-top: 12px;
+
+  color: white;
+  font-weight: bold;
+}
+
+.card-rarity {
+  margin-top: 4px;
+
+  color: #ffd54a;
+  font-size: 14px;
+}
+
+.bottom-nav {
+  position: absolute;
+
+  bottom: 0;
+
+  width: 100%;
+  height: 90px;
+
+  background: rgba(10,10,18,0.98);
+
+  border-top: 1px solid rgba(255,255,255,0.08);
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+
+  color: rgba(255,255,255,0.45);
+
+  font-size: 14px;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+.active {
+  color: white;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+}
