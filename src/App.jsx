@@ -1,153 +1,430 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./index.css";
 
 import testCard from "./assets/cards/test-card.png";
 
-const cards = [
-  {
-    id: 1,
-    name: "Hinata",
-    rarity: "Legendary",
-    image: testCard,
-  },
-  {
-    id: 2,
-    name: "Kageyama",
-    rarity: "Epic",
-    image: testCard,
-  },
-  {
-    id: 3,
-    name: "Bokuto",
-    rarity: "Rare",
-    image: testCard,
-  },
-];
+import clickSoundFile from "./assets/sounds/click.mp3";
+import coinSoundFile from "./assets/sounds/coin.mp3";
+
+const baseCard = {
+  id: 1,
+  name: "Хината",
+  rarity: "Легендарная",
+  image: testCard,
+};
 
 export default function App() {
-  const [screen, setScreen] = useState("home");
-  const [sortType, setSortType] = useState("all");
+  const [screen, setScreen] =
+    useState("home");
 
-  const filteredCards =
-    sortType === "all"
-      ? cards
-      : cards.filter((card) => card.rarity === sortType);
+  const [coins, setCoins] = useState(
+    () => {
+      return Number(
+        localStorage.getItem("coins")
+      ) || 1000;
+    }
+  );
+
+  const [collection, setCollection] =
+    useState(() => {
+      const saved = localStorage.getItem(
+        "collection"
+      );
+
+      return saved ? JSON.parse(saved) : [];
+    });
+
+  const [openedCard, setOpenedCard] =
+    useState(null);
+
+  const [sortType, setSortType] =
+    useState("Все");
+
+  const [notification, setNotification] =
+    useState("");
+
+  const clickSound = useRef(null);
+  const coinSound = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "coins",
+      coins
+    );
+  }, [coins]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "collection",
+      JSON.stringify(collection)
+    );
+  }, [collection]);
+
+  useEffect(() => {
+    clickSound.current = new Audio(
+      clickSoundFile
+    );
+
+    clickSound.current.volume = 0.3;
+
+    coinSound.current = new Audio(
+      coinSoundFile
+    );
+
+    coinSound.current.volume = 0.4;
+  }, []);
+
+  const playClick = () => {
+    if (clickSound.current) {
+      clickSound.current.currentTime = 0;
+      clickSound.current.play();
+    }
+  };
+
+  const playCoin = () => {
+    if (coinSound.current) {
+      coinSound.current.currentTime = 0;
+      coinSound.current.play();
+    }
+  };
+
+  const showNotification = (text) => {
+    setNotification(text);
+
+    setTimeout(() => {
+      setNotification("");
+    }, 2200);
+  };
+
+  const goTo = (page) => {
+    playClick();
+    setScreen(page);
+  };
+
+  const earnCoins = () => {
+    playCoin();
+
+    setCoins((prev) => prev + 25);
+  };
+
+  const openPack = (price) => {
+    playClick();
+
+    if (coins < price) {
+      showNotification(
+        "❌ Недостаточно монет"
+      );
+
+      return;
+    }
+
+    setCoins((prev) => prev - price);
+
+    setOpenedCard({
+      ...baseCard,
+      uniqueId:
+        Date.now() + Math.random(),
+    });
+
+    setScreen("opened");
+  };
+
+  const saveCard = () => {
+    playClick();
+
+    setCollection((prev) => [
+      ...prev,
+      openedCard,
+    ]);
+
+    showNotification(
+      "✅ Карточка добавлена"
+    );
+
+    setScreen("shop");
+  };
+
+  const [playerId] = useState(() => {
+  let savedId =
+    localStorage.getItem("playerId");
+
+  if (!savedId) {
+    let globalCounter =
+      Number(
+        localStorage.getItem(
+          "globalPlayerCounter"
+        )
+      ) || 1;
+
+    savedId = globalCounter;
+
+    localStorage.setItem(
+      "playerId",
+      savedId
+    );
+
+    localStorage.setItem(
+      "globalPlayerCounter",
+      globalCounter + 1
+    );
+  }
+
+  return savedId;
+});
+
+  const sellCard = () => {
+    playClick();
+
+    setCoins((prev) => prev + 100);
+
+    showNotification(
+      "💰 Карточка продана"
+    );
+
+    setScreen("shop");
+  };
+
+  const cardCount = (name) => {
+    return collection.filter(
+      (card) => card.name === name
+    ).length;
+  };
+
+  const filteredCollection =
+    sortType === "Все"
+      ? [
+          ...new Map(
+            collection.map((card) => [
+              card.name,
+              card,
+            ])
+          ).values(),
+        ]
+      : [
+          ...new Map(
+            collection
+              .filter(
+                (card) =>
+                  card.rarity === sortType
+              )
+              .map((card) => [
+                card.name,
+                card,
+              ])
+          ).values(),
+        ];
 
   return (
     <div className="app">
       <div className="phone-frame">
+        {notification && (
+          <div className="notification">
+            {notification}
+          </div>
+        )}
+
         <div className="top-bar">
           <div>
-            <div className="game-title">VOLLEY CARDS</div>
-            <div className="subtitle">Telegram Edition</div>
+            <div className="game-title">
+              VOLLEY CARDS
+            </div>
+
+            <div className="subtitle">
+              ID: {playerId}
+            </div>
           </div>
 
-          <div className="coins">💰 1200</div>
+          <div className="coins">
+            💰 {coins}
+          </div>
         </div>
 
         <div className="content">
           {screen === "home" && (
             <div className="home-screen">
-              <div className="big-pack">
-                <div className="pack-glow"></div>
-
-                <div className="pack-text">
-                  PREMIUM
-                  <br />
-                  PACK
-                </div>
+              <div className="clicker-title">
+                НАЖИМАЙ И
+                ЗАРАБАТЫВАЙ
               </div>
 
               <button
-                className="main-button"
-                onClick={() => setScreen("shop")}
+                className="coin-clicker"
+                onClick={earnCoins}
               >
-                OPEN SHOP
+                💰
               </button>
+
+              <div className="earn-text">
+                +25 МОНЕТ
+              </div>
             </div>
           )}
 
           {screen === "shop" && (
             <div className="shop-screen">
-              <h2 className="section-title">SHOP</h2>
-
-              <div className="shop-pack legendary">
-                <div>
-                  <div className="shop-pack-title">
-                    LEGENDARY PACK
-                  </div>
-
-                  <div className="shop-pack-sub">
-                    Higher legendary chance
-                  </div>
+              <div className="shop-banner">
+                <div className="banner-title">
+                  TOTY EVENT
                 </div>
 
-                <button className="buy-button">
-                  500 💰
-                </button>
+                <div className="banner-sub">
+                  Лучшие карточки сезона
+                </div>
               </div>
 
-              <div className="shop-pack epic">
+              <div
+                className="fifa-pack legendary"
+                onClick={() =>
+                  openPack(500)
+                }
+              >
                 <div>
-                  <div className="shop-pack-title">
-                    EPIC PACK
+                  <div className="pack-name">
+                    ЛЕГЕНДАРНЫЙ ПАК
                   </div>
 
-                  <div className="shop-pack-sub">
-                    Good epic chance
+                  <div className="pack-desc">
+                    Повышенный шанс
+                    легендарок
                   </div>
                 </div>
 
-                <button className="buy-button">
+                <div className="pack-price">
+                  500 💰
+                </div>
+              </div>
+
+              <div
+                className="fifa-pack epic"
+                onClick={() =>
+                  openPack(250)
+                }
+              >
+                <div>
+                  <div className="pack-name">
+                    ЭПИЧЕСКИЙ ПАК
+                  </div>
+
+                  <div className="pack-desc">
+                    Средняя редкость
+                  </div>
+                </div>
+
+                <div className="pack-price">
                   250 💰
-                </button>
+                </div>
               </div>
             </div>
           )}
 
+          {screen === "opened" &&
+            openedCard && (
+              <div className="opened-screen">
+                <div className="you-got">
+                  ВАМ ВЫПАЛО
+                </div>
+
+                <div className="single-card-area">
+                  <div className="card-glow"></div>
+
+                  <div className="card-shine"></div>
+
+                  <img
+                    src={openedCard.image}
+                    alt="card"
+                    className="opened-card"
+                  />
+                </div>
+
+                <div className="opened-name">
+                  {openedCard.name}
+                </div>
+
+                <div className="opened-rarity">
+                  {openedCard.rarity}
+                </div>
+
+                <div className="opened-buttons">
+                  <button
+                    className="save-btn"
+                    onClick={saveCard}
+                  >
+                    ЗАБРАТЬ
+                  </button>
+
+                  <button
+                    className="sell-btn"
+                    onClick={sellCard}
+                  >
+                    ПРОДАТЬ
+                  </button>
+                </div>
+              </div>
+            )}
+
           {screen === "collection" && (
             <div className="collection-screen">
               <div className="collection-top">
-                <h2 className="section-title">
-                  COLLECTION
-                </h2>
+                <div className="section-title">
+                  КОЛЛЕКЦИЯ
+                </div>
 
                 <select
                   className="sort-select"
                   value={sortType}
                   onChange={(e) =>
-                    setSortType(e.target.value)
+                    setSortType(
+                      e.target.value
+                    )
                   }
                 >
-                  <option value="all">All</option>
-                  <option value="Legendary">
-                    Legendary
+                  <option>
+                    Все
                   </option>
-                  <option value="Epic">Epic</option>
-                  <option value="Rare">Rare</option>
+
+                  <option>
+                    Легендарная
+                  </option>
+
+                  <option>
+                    Эпическая
+                  </option>
+
+                  <option>
+                    Редкая
+                  </option>
                 </select>
               </div>
 
-              <div className="cards-grid">
-                {filteredCards.map((card) => (
-                  <div
-                    className="collection-card"
-                    key={card.id}
-                  >
-                    <img
-                      src={card.image}
-                      alt="card"
-                    />
+              <div className="collection-grid">
+                {filteredCollection.map(
+                  (card, index) => (
+                    <div
+                      className="collection-card"
+                      key={index}
+                    >
+                      <img
+                        src={card.image}
+                        alt="card"
+                      />
 
-                    <div className="card-name">
-                      {card.name}
-                    </div>
+                      <div className="card-name-small">
+                        {card.name}
+                      </div>
 
-                    <div className="card-rarity">
-                      {card.rarity}
+                      <div className="card-rarity-small">
+                        {card.rarity}
+                      </div>
+
+                      <div className="card-count">
+                        x
+                        {cardCount(
+                          card.name
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           )}
@@ -155,36 +432,26 @@ export default function App() {
 
         <div className="bottom-nav">
           <button
-            className={
-              screen === "home"
-                ? "nav-btn active"
-                : "nav-btn"
-            }
-            onClick={() => setScreen("home")}
+            className="nav-btn"
+            onClick={() => goTo("home")}
           >
-            HOME
+            ГЛАВНАЯ
           </button>
 
           <button
-            className={
-              screen === "shop"
-                ? "nav-btn active"
-                : "nav-btn"
-            }
-            onClick={() => setScreen("shop")}
+            className="nav-btn"
+            onClick={() => goTo("shop")}
           >
-            SHOP
+            МАГАЗИН
           </button>
 
           <button
-            className={
-              screen === "collection"
-                ? "nav-btn active"
-                : "nav-btn"
+            className="nav-btn"
+            onClick={() =>
+              goTo("collection")
             }
-            onClick={() => setScreen("collection")}
           >
-            COLLECTION
+            КОЛЛЕКЦИЯ
           </button>
         </div>
       </div>
