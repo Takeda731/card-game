@@ -1,5 +1,6 @@
 import "./App.css";
 import { useState } from "react";
+import ninja from "./assets/Artur.png";
 
 const allCards = [
   {
@@ -8,8 +9,7 @@ const allCards = [
     rarity: "bronze",
     hp: 90,
     attack: 15,
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800",
+    image: ninja,
   },
 
   {
