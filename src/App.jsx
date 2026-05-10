@@ -11,7 +11,7 @@ function App() {
       <h1>Card Battle Arena</h1>
 
       <div className="top-bar">
-        Coins: {coins}
+        Баланс: {coins}
       </div>
 
       {screen === "menu" && (
@@ -26,7 +26,7 @@ function App() {
           </button>
 
           <button onClick={() => setScreen("earn")}>
-            Заработок
+            Кликер
           </button>
 
         </div>
@@ -39,7 +39,7 @@ function App() {
             Назад
           </button>
 
-          <h2>Collection</h2>
+          <h2>Коллекция</h2>
 
         </div>
       )}
@@ -48,10 +48,10 @@ function App() {
         <div>
 
           <button onClick={() => setScreen("menu")}>
-            Back
+            Назад
           </button>
 
-          <h2>Pack Shop</h2>
+          <h2>Магазин</h2>
 
         </div>
       )}
@@ -60,13 +60,13 @@ function App() {
         <div>
 
           <button onClick={() => setScreen("menu")}>
-            Back
+            Назад
           </button>
 
-          <h2>Earn Coins</h2>
+          <h2>Кликер</h2>
 
           <button onClick={() => setCoins(coins + 10)}>
-            +10 Coins
+            +10 Монет
           </button>
 
         </div>
