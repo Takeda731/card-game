@@ -1,358 +1,460 @@
-import "./App.css";
-import { useState } from "react";
-import ninja from "./assets/Artur.png";
+import { useEffect, useRef, useState } from "react";
+import "./index.css";
 
-const allCards = [
-  {
-    id: 1,
-    name: "Теневой Ниндзя",
-    rarity: "bronze",
-    hp: 90,
-    attack: 15,
-    image: ninja,
-  },
+import testCard from "./assets/cards/test-card.png";
 
-  {
-    id: 2,
-    name: "Кибер Самурай",
-    rarity: "silver",
-    hp: 130,
-    attack: 28,
-    image:
-      "https://images.unsplash.com/photo-1511367461989-f85a21fda167?q=80&w=800",
-  },
+import clickSoundFile from "./assets/sounds/click.mp3";
+import coinSoundFile from "./assets/sounds/coin.mp3";
 
-  {
-    id: 3,
-    name: "Император Тьмы",
-    rarity: "gold",
-    hp: 200,
-    attack: 45,
-    image:
-      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=800",
-  },
+const baseCard = {
+  id: 1,
+  name: "Хината",
+  rarity: "Легендарная",
+  image: testCard,
+};
 
-  {
-    id: 4,
-    name: "Ледяной Воин",
-    rarity: "bronze",
-    hp: 100,
-    attack: 17,
-    image:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=800",
-  },
+export default function App() {
+  const [screen, setScreen] =
+    useState("home");
 
-  {
-    id: 5,
-    name: "Призрачный Боец",
-    rarity: "silver",
-    hp: 140,
-    attack: 30,
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800",
-  },
+  const [coins, setCoins] = useState(
+    () => {
+      return Number(
+        localStorage.getItem("coins")
+      ) || 1000;
+    }
+  );
 
-  {
-    id: 6,
-    name: "Король Арены",
-    rarity: "gold",
-    hp: 220,
-    attack: 55,
-    image:
-      "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?q=80&w=800",
-  },
-];
+  const [collection, setCollection] =
+    useState(() => {
+      const saved = localStorage.getItem(
+        "collection"
+      );
 
-function App() {
-  const [screen, setScreen] = useState("menu");
+      return saved ? JSON.parse(saved) : [];
+    });
 
-  const [coins, setCoins] = useState(1000);
+  const [openedCard, setOpenedCard] =
+    useState(null);
 
-  const [message, setMessage] = useState("");
+  const [sortType, setSortType] =
+    useState("Все");
 
-  const [openedCard, setOpenedCard] = useState(null);
+  const [notification, setNotification] =
+    useState("");
 
-  const [collection, setCollection] = useState([
-    allCards[0],
-    allCards[1],
-  ]);
+  const clickSound = useRef(null);
+  const coinSound = useRef(null);
 
-  const [filter, setFilter] = useState("all");
+  useEffect(() => {
+    localStorage.setItem(
+      "coins",
+      coins
+    );
+  }, [coins]);
 
-  function earnCoins() {
-    setCoins(coins + 50);
-  }
+  useEffect(() => {
+    localStorage.setItem(
+      "collection",
+      JSON.stringify(collection)
+    );
+  }, [collection]);
 
-  function openPack(type) {
-    const prices = {
-      bronze: 200,
-      silver: 500,
-      gold: 1000,
-    };
+  useEffect(() => {
+    clickSound.current = new Audio(
+      clickSoundFile
+    );
 
-    if (coins < prices[type]) {
-      setMessage("Недостаточно монет");
+    clickSound.current.volume = 0.3;
+
+    coinSound.current = new Audio(
+      coinSoundFile
+    );
+
+    coinSound.current.volume = 0.4;
+  }, []);
+
+  const playClick = () => {
+    if (clickSound.current) {
+      clickSound.current.currentTime = 0;
+      clickSound.current.play();
+    }
+  };
+
+  const playCoin = () => {
+    if (coinSound.current) {
+      coinSound.current.currentTime = 0;
+      coinSound.current.play();
+    }
+  };
+
+  const showNotification = (text) => {
+    setNotification(text);
+
+    setTimeout(() => {
+      setNotification("");
+    }, 2200);
+  };
+
+  const goTo = (page) => {
+    playClick();
+    setScreen(page);
+  };
+
+  const earnCoins = () => {
+    playCoin();
+
+    setCoins((prev) => prev + 25);
+  };
+
+  const openPack = (price) => {
+    playClick();
+
+    if (coins < price) {
+      showNotification(
+        "❌ Недостаточно монет"
+      );
+
       return;
     }
 
-    let pool = [];
+    setCoins((prev) => prev - price);
 
-    if (type === "bronze") {
-      pool = allCards.filter(
-        (card) =>
-          card.rarity === "bronze" ||
-          card.rarity === "silver"
-      );
-    }
+    setOpenedCard({
+      ...baseCard,
+      uniqueId:
+        Date.now() + Math.random(),
+    });
 
-    if (type === "silver") {
-      pool = allCards.filter(
-        (card) =>
-          card.rarity === "silver" ||
-          card.rarity === "gold"
-      );
-    }
+    setScreen("opened");
+  };
 
-    if (type === "gold") {
-      pool = allCards.filter(
-        (card) => card.rarity === "gold"
-      );
-    }
+  const saveCard = () => {
+    playClick();
 
-    const randomCard =
-      pool[Math.floor(Math.random() * pool.length)];
+    setCollection((prev) => [
+      ...prev,
+      openedCard,
+    ]);
 
-    setCoins(coins - prices[type]);
+    showNotification(
+      "✅ Карточка добавлена"
+    );
 
-    setCollection([...collection, randomCard]);
+    setScreen("shop");
+  };
 
-    setOpenedCard(randomCard);
+  const [playerId] = useState(() => {
+  let savedId =
+    localStorage.getItem("playerId");
+
+  if (!savedId) {
+    let globalCounter =
+      Number(
+        localStorage.getItem(
+          "globalPlayerCounter"
+        )
+      ) || 1;
+
+    savedId = globalCounter;
+
+    localStorage.setItem(
+      "playerId",
+      savedId
+    );
+
+    localStorage.setItem(
+      "globalPlayerCounter",
+      globalCounter + 1
+    );
   }
 
-  const filteredCards = collection.filter((card) => {
-    if (filter === "all") return true;
+  return savedId;
+});
 
-    return card.rarity === filter;
-  });
+  const sellCard = () => {
+    playClick();
+
+    setCoins((prev) => prev + 100);
+
+    showNotification(
+      "💰 Карточка продана"
+    );
+
+    setScreen("shop");
+  };
+
+  const cardCount = (name) => {
+    return collection.filter(
+      (card) => card.name === name
+    ).length;
+  };
+
+  const filteredCollection =
+    sortType === "Все"
+      ? [
+          ...new Map(
+            collection.map((card) => [
+              card.name,
+              card,
+            ])
+          ).values(),
+        ]
+      : [
+          ...new Map(
+            collection
+              .filter(
+                (card) =>
+                  card.rarity === sortType
+              )
+              .map((card) => [
+                card.name,
+                card,
+              ])
+          ).values(),
+        ];
 
   return (
-    <div className="game">
+    <div className="app">
+      <div className="phone-frame">
+        {notification && (
+          <div className="notification">
+            {notification}
+          </div>
+        )}
 
-      <h1>Card Battle Arena</h1>
+        <div className="top-bar">
+          <div>
+            <div className="game-title">
+              VOLLEY CARDS
+            </div>
 
-      <div className="top-bar">
-        Монеты: {coins}
-      </div>
-
-      {screen === "menu" && (
-        <div className="menu">
-
-          <button onClick={() => setScreen("collection")}>
-            Коллекция
-          </button>
-
-          <button onClick={() => setScreen("shop")}>
-            Магазин паков
-          </button>
-
-          <button onClick={() => setScreen("earn")}>
-            Заработок монет
-          </button>
-
-        </div>
-      )}
-
-      {screen === "collection" && (
-        <div>
-
-          <button onClick={() => setScreen("menu")}>
-            Назад
-          </button>
-
-          <h2>Моя коллекция</h2>
-
-          <div className="sort-box">
-
-            <select
-              value={filter}
-              onChange={(e) =>
-                setFilter(e.target.value)
-              }
-            >
-
-              <option value="all">
-                Все карточки
-              </option>
-
-              <option value="bronze">
-                Bronze
-              </option>
-
-              <option value="silver">
-                Silver
-              </option>
-
-              <option value="gold">
-                Gold
-              </option>
-
-            </select>
-
+            <div className="subtitle">
+              ID: {playerId}
+            </div>
           </div>
 
-          <div className="card-grid">
+          <div className="coins">
+            💰 {coins}
+          </div>
+        </div>
 
-            {filteredCards.map((card, index) => (
-              <div
-                className={`card ${card.rarity}`}
-                key={index}
-              >
-
-                <img src={card.image} alt={card.name} />
-
-                <h3>{card.name}</h3>
-
-                <p>
-                  {card.rarity.toUpperCase()}
-                </p>
-
-                <p>HP: {card.hp}</p>
-                <p>ATK: {card.attack}</p>
-
+        <div className="content">
+          {screen === "home" && (
+            <div className="home-screen">
+              <div className="clicker-title">
+                НАЖИМАЙ И
+                ЗАРАБАТЫВАЙ
               </div>
-            ))}
 
-          </div>
+              <button
+                className="coin-clicker"
+                onClick={earnCoins}
+              >
+                💰
+              </button>
 
+              <div className="earn-text">
+                +25 МОНЕТ
+              </div>
+            </div>
+          )}
+
+          {screen === "shop" && (
+            <div className="shop-screen">
+              <div className="shop-banner">
+                <div className="banner-title">
+                  TOTY EVENT
+                </div>
+
+                <div className="banner-sub">
+                  Лучшие карточки сезона
+                </div>
+              </div>
+
+              <div
+                className="fifa-pack legendary"
+                onClick={() =>
+                  openPack(500)
+                }
+              >
+                <div>
+                  <div className="pack-name">
+                    ЛЕГЕНДАРНЫЙ ПАК
+                  </div>
+
+                  <div className="pack-desc">
+                    Повышенный шанс
+                    легендарок
+                  </div>
+                </div>
+
+                <div className="pack-price">
+                  500 💰
+                </div>
+              </div>
+
+              <div
+                className="fifa-pack epic"
+                onClick={() =>
+                  openPack(250)
+                }
+              >
+                <div>
+                  <div className="pack-name">
+                    ЭПИЧЕСКИЙ ПАК
+                  </div>
+
+                  <div className="pack-desc">
+                    Средняя редкость
+                  </div>
+                </div>
+
+                <div className="pack-price">
+                  250 💰
+                </div>
+              </div>
+            </div>
+          )}
+
+          {screen === "opened" &&
+            openedCard && (
+              <div className="opened-screen">
+                <div className="you-got">
+                  ВАМ ВЫПАЛО
+                </div>
+
+                <div className="single-card-area">
+                  <div className="card-glow"></div>
+
+                  <div className="card-shine"></div>
+
+                  <img
+                    src={openedCard.image}
+                    alt="card"
+                    className="opened-card"
+                  />
+                </div>
+
+                <div className="opened-name">
+                  {openedCard.name}
+                </div>
+
+                <div className="opened-rarity">
+                  {openedCard.rarity}
+                </div>
+
+                <div className="opened-buttons">
+                  <button
+                    className="save-btn"
+                    onClick={saveCard}
+                  >
+                    ЗАБРАТЬ
+                  </button>
+
+                  <button
+                    className="sell-btn"
+                    onClick={sellCard}
+                  >
+                    ПРОДАТЬ
+                  </button>
+                </div>
+              </div>
+            )}
+
+          {screen === "collection" && (
+            <div className="collection-screen">
+              <div className="collection-top">
+                <div className="section-title">
+                  КОЛЛЕКЦИЯ
+                </div>
+
+                <select
+                  className="sort-select"
+                  value={sortType}
+                  onChange={(e) =>
+                    setSortType(
+                      e.target.value
+                    )
+                  }
+                >
+                  <option>
+                    Все
+                  </option>
+
+                  <option>
+                    Легендарная
+                  </option>
+
+                  <option>
+                    Эпическая
+                  </option>
+
+                  <option>
+                    Редкая
+                  </option>
+                </select>
+              </div>
+
+              <div className="collection-grid">
+                {filteredCollection.map(
+                  (card, index) => (
+                    <div
+                      className="collection-card"
+                      key={index}
+                    >
+                      <img
+                        src={card.image}
+                        alt="card"
+                      />
+
+                      <div className="card-name-small">
+                        {card.name}
+                      </div>
+
+                      <div className="card-rarity-small">
+                        {card.rarity}
+                      </div>
+
+                      <div className="card-count">
+                        x
+                        {cardCount(
+                          card.name
+                        )}
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
 
-      {screen === "shop" && (
-        <div>
-
-          <button onClick={() => setScreen("menu")}>
-            Назад
-          </button>
-
-          <h2>Магазин паков</h2>
-
-          <div className="pack bronze-pack">
-
-            <h3>Bronze Pack</h3>
-
-            <p>200 монет</p>
-
-            <button
-              onClick={() => openPack("bronze")}
-            >
-              Купить
-            </button>
-
-          </div>
-
-          <div className="pack silver-pack">
-
-            <h3>Silver Pack</h3>
-
-            <p>500 монет</p>
-
-            <button
-              onClick={() => openPack("silver")}
-            >
-              Купить
-            </button>
-
-          </div>
-
-          <div className="pack gold-pack">
-
-            <h3>Gold Pack</h3>
-
-            <p>1000 монет</p>
-
-            <button
-              onClick={() => openPack("gold")}
-            >
-              Купить
-            </button>
-
-          </div>
-
-        </div>
-      )}
-
-      {screen === "earn" && (
-        <div>
-
-          <button onClick={() => setScreen("menu")}>
-            Назад
-          </button>
-
-          <h2>Заработок монет</h2>
-
-          <button onClick={earnCoins}>
-            +50 монет
-          </button>
-
-        </div>
-      )}
-
-      {message && (
-
-        <div className="message-screen">
-
-          <div className="message-box">
-
-            <h2>{message}</h2>
-
-            <button
-              onClick={() => setMessage("")}
-            >
-              Окей
-            </button>
-
-          </div>
-
-        </div>
-
-      )}
-
-      {openedCard && (
-
-        <div className="drop-screen">
-
-          <div
-            className={`drop-card ${openedCard.rarity}`}
+        <div className="bottom-nav">
+          <button
+            className="nav-btn"
+            onClick={() => goTo("home")}
           >
+            ГЛАВНАЯ
+          </button>
 
-            <img
-              src={openedCard.image}
-              alt={openedCard.name}
-            />
+          <button
+            className="nav-btn"
+            onClick={() => goTo("shop")}
+          >
+            МАГАЗИН
+          </button>
 
-            <h2>{openedCard.name}</h2>
-
-            <p>
-              {openedCard.rarity.toUpperCase()}
-            </p>
-
-            <p>HP: {openedCard.hp}</p>
-            <p>ATK: {openedCard.attack}</p>
-
-            <button
-              onClick={() => setOpenedCard(null)}
-            >
-              Забрать
-            </button>
-
-          </div>
-
+          <button
+            className="nav-btn"
+            onClick={() =>
+              goTo("collection")
+            }
+          >
+            КОЛЛЕКЦИЯ
+          </button>
         </div>
-
-      )}
-
+      </div>
     </div>
   );
 }
-
-export default App;
